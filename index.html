@@ -2,32 +2,28 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>AR Doodle Fun</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#0f172a}
-body{font-family:system-ui,sans-serif;display:flex;flex-direction:column}
+body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}
 
-/* Stage */
 #stage{position:relative;flex:1;overflow:hidden;background:#1a1a2e}
 #stage canvas{position:absolute;top:0;left:0;z-index:3;touch-action:none}
 #stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 #stage .bg-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 
-/* Overlay */
 #startOverlay{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.95)}
 .overlay-box{background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:36px 28px;max-width:360px;text-align:center;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .overlay-box h2{font-size:22px;margin-bottom:8px}
 .overlay-box p{font-size:14px;color:#94a3b8;margin-bottom:22px;line-height:1.6}
 .overlay-box button{padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:0;background:#38bdf8;color:#0f172a;font-family:inherit}
 
-/* Toolbar */
 #toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(15,23,42,.95);border-top:1px solid rgba(255,255,255,.12);overflow-x:auto;scrollbar-width:none;z-index:10;flex-shrink:0;-webkit-overflow-scrolling:touch}
 #toolbar::-webkit-scrollbar{display:none}
 
-/* Buttons */
-.tb{display:flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit;min-height:44px;background:rgba(255,255,255,.08);color:#e2e8f0;transition:all .15s;touch-action:manipulation}
+.tb{display:flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit;min-height:44px;background:rgba(255,255,255,.08);color:#e2e8f0;transition:all .15s}
 .tb:active{transform:scale(.95)}
 .tb.active{border-color:#38bdf8;background:rgba(56,189,248,.15);color:#38bdf8}
 .tb.draw{color:#fff;background:rgba(56,189,248,.3)}
@@ -35,45 +31,33 @@ body{font-family:system-ui,sans-serif;display:flex;flex-direction:column}
 .tb.sticker{color:#a78bfa}
 .tb svg{width:20px;height:20px;flex-shrink:0;pointer-events:none}
 
-/* Colors */
 .color-row{display:flex;gap:6px;align-items:center}
-.cdot{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex-shrink:0;transition:all .15s;touch-action:manipulation}
+.cdot{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex-shrink:0;transition:all .15s}
 .cdot:active{transform:scale(.9)}
 .cdot.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 12px rgba(255,255,255,.4)}
+.cdot[data-color="#FFFFFF"],.cdot[data-color="#ffffff"]{border-color:rgba(255,255,255,.3)}
 
-/* Stickers */
 .sticker-row{display:flex;gap:4px;align-items:center}
-.sbtn{font-size:26px;padding:6px 8px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;line-height:1;touch-action:manipulation}
+.sbtn{font-size:26px;padding:6px 8px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;line-height:1}
 .sbtn:active{transform:scale(.9)}
 .sbtn.active{border-color:#a78bfa;background:rgba(167,139,250,.2)}
 
-/* Slider */
 .sz{display:flex;align-items:center;gap:8px}
 .sz input{width:80px;height:28px;accent-color:#38bdf8}
 .sz span{font-size:11px;color:#94a3b8;white-space:nowrap}
 
-/* Spacer */
 .s1{flex:1}
 .sep{color:rgba(255,255,255,.2);margin:0 2px}
-
-/* Recording */
 .rec{border-color:#ef4444!important;background:rgba(239,68,68,.2)!important;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* Toast */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,.95);color:#fff;padding:10px 24px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
 
-/* Guide text on canvas */
-#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;color:rgba(255,255,255,.3);font-size:15px;text-align:center;pointer-events:none;transition:opacity .5s}
+#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;color:rgba(255,255,255,.5);font-size:15px;text-align:center;pointer-events:none;transition:opacity .5s;text-shadow:0 0 10px rgba(0,0,0,.8)}
 
-/* Responsive */
-@media(max-width:480px){
-  .tb{padding:10px 12px;font-size:12px;gap:4px}
-  .tb svg{width:18px;height:18px}
-  .cdot{width:32px;height:32px}
-  .sbtn{font-size:24px}
-}
+/* debug dot */
+#debugDot{position:fixed;width:12px;height:12px;border-radius:50%;background:#0f0;z-index:99999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);box-shadow:0 0 10px #0f0}
 </style>
 </head>
 <body>
@@ -81,7 +65,7 @@ body{font-family:system-ui,sans-serif;display:flex;flex-direction:column}
 <div id="startOverlay">
   <div class="overlay-box">
     <h2>🎨 AR Doodle Fun</h2>
-    <p>Gambar langsung di atas kamera. Klik <b>Mulai AR</b>, izinkan kamera, lalu sentuh & gambar di layar.</p>
+    <p>Gambar langsung di atas kamera. Klik <b>Mulai AR</b>, izinkan kamera, lalu sentuh & geser di layar.</p>
     <button id="startBtn">📷 Mulai AR</button>
   </div>
 </div>
@@ -89,8 +73,10 @@ body{font-family:system-ui,sans-serif;display:flex;flex-direction:column}
 <div id="stage">
   <video id="camVideo" playsinline autoplay muted></video>
   <canvas id="drawCanvas"></canvas>
-  <div id="guide">👆 Sentuh & gambar di sini</div>
+  <div id="guide">👆 Sentuh layar lalu geser</div>
 </div>
+
+<div id="debugDot"></div>
 
 <div id="toolbar">
   <button class="tb draw active" data-t="draw">
@@ -112,16 +98,15 @@ body{font-family:system-ui,sans-serif;display:flex;flex-direction:column}
   <div class="s1"></div>
   <div class="sticker-row" id="stickerRow"></div>
   <div class="s1"></div>
-  <button class="tb" id="btnClear" style="color:#f59e0b">🗑️ Bersihkan</button>
-  <button class="tb" id="btnSave" style="color:#10b981">📸 Foto</button>
-  <button class="tb" id="btnRec" style="color:#f59e0b">⏺️ Video</button>
+  <button class="tb" id="btnClear" style="color:#f59e0b">🗑️</button>
+  <button class="tb" id="btnSave" style="color:#10b981">📸</button>
+  <button class="tb" id="btnRec" style="color:#f59e0b">⏺️</button>
 </div>
 
 <div id="toast"></div>
 
 <script>
 (function(){
-'use strict';
 var stage = document.getElementById('stage');
 var canvas = document.getElementById('drawCanvas');
 var ctx = canvas.getContext('2d');
@@ -129,122 +114,272 @@ var video = document.getElementById('camVideo');
 var guide = document.getElementById('guide');
 var toast = document.getElementById('toast');
 var overlay = document.getElementById('startOverlay');
+var debugDot = document.getElementById('debugDot');
 
 var COLORS = ['#FFFFFF','#FF0000','#FF6600','#FFCC00','#00FF00','#00CCFF','#0066FF','#9933FF','#FF00FF','#FF69B4','#00FFFF','#808080','#000000'];
 var STICKERS = ['😊','😂','😍','🤩','👍','❤️','🌟','🚀','🌈','🍕','🐱','🐶','🌸','🎉','💡','🔥','👻','🤖','👑','💯','✨','🦋','🎈','🍭'];
 
-var color = '#FFFFFF', size = 5, tool = 'draw', sticker = null;
-var drawing = false, camReady = false;
+var color = '#FFFFFF', size = 5, tool = 'draw', stickerToPlace = null;
+var drawing = false, lastX = 0, lastY = 0;
+var camReady = false;
 var recorder = null, chunks = [], recording = false;
 
-// ── Canvas sizing ──
+// ── Canvas sizing ── FORCE to full stage size
 function fit(){
-  var w = stage.clientWidth, h = stage.clientHeight;
-  if(w === 0 || h === 0){ w = window.innerWidth; h = window.innerHeight - 60; }
-  canvas.width = w; canvas.height = h;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.strokeStyle = color; ctx.lineWidth = size;
+  var w = stage.clientWidth;
+  var h = stage.clientHeight;
+  if(w < 1) w = window.innerWidth;
+  if(h < 1) h = window.innerHeight;
+  
+  if(canvas.width !== w || canvas.height !== h){
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    console.log('Canvas sized:', w + 'x' + h);
+    // Restore context
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.globalCompositeOperation = 'source-over';
+  }
 }
-fit();
-window.addEventListener('resize', fit);
-// Also refit after camera starts
-setTimeout(fit, 500);
-setTimeout(fit, 1500);
 
-// ── Position ──
-function pos(e){
+// Fit immediately and repeatedly
+fit();
+setTimeout(fit, 100);
+setTimeout(fit, 500);
+setTimeout(fit, 1000);
+setTimeout(fit, 2000);
+window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
+
+// ── Get touch position ──
+function getPos(e){
   var r = canvas.getBoundingClientRect();
   var cx, cy;
-  if(e.touches && e.touches.length){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-  else { cx = e.clientX; cy = e.clientY; }
-  return { x: cx - r.left, y: cy - r.top };
+  
+  // Try touch first
+  if(e.touches && e.touches.length > 0){
+    cx = e.touches[0].clientX;
+    cy = e.touches[0].clientY;
+  }
+  // Then pointer
+  else if(e.clientX !== undefined && e.clientY !== undefined){
+    cx = e.clientX;
+    cy = e.clientY;
+  }
+  // Fallback: changedTouches
+  else if(e.changedTouches && e.changedTouches.length > 0){
+    cx = e.changedTouches[0].clientX;
+    cy = e.changedTouches[0].clientY;
+  }
+  else {
+    return null;
+  }
+  
+  var x = cx - r.left;
+  var y = cy - r.top;
+  
+  // Show debug dot
+  debugDot.style.left = cx + 'px';
+  debugDot.style.top = cy + 'px';
+  debugDot.style.opacity = '1';
+  setTimeout(function(){ debugDot.style.opacity = '0'; }, 200);
+  
+  return {x:x, y:y, cx:cx, cy:cy};
 }
 
-// ── Draw ──
-function down(e){
-  e.preventDefault(); e.stopPropagation();
+// ── Drawing ──
+function startDraw(e){
+  console.log('START DRAW', e.type, 'tool:', tool);
   fit();
   guide.style.opacity = '0';
+  
   if(tool === 'sticker'){
-    if(sticker){
-      var p = pos(e);
+    if(stickerToPlace){
+      var p = getPos(e);
+      if(!p) return;
       ctx.font = (size * 10) + 'px Arial';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillStyle = color;
-      ctx.fillText(sticker, p.x, p.y);
-      sticker = null; setTool('draw');
+      ctx.fillText(stickerToPlace, p.x, p.y);
+      stickerToPlace = null;
+      setTool('draw');
+      showToast('Stiker ditempel! ✅');
     }
     return;
   }
+  
+  var p = getPos(e);
+  if(!p) return;
+  
+  drawing = true;
+  lastX = p.x;
+  lastY = p.y;
+  
+  // Set composite mode
   if(tool === 'erase'){
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = size * 2;
+    ctx.lineWidth = size * 3;
   } else {
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
   }
-  drawing = true;
-  var p = pos(e);
-  // Draw dot immediately
+  
+  // Draw dot at start position
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, size/2, 0, Math.PI*2);
   ctx.fillStyle = tool === 'erase' ? 'rgba(0,0,0,0)' : color;
-  ctx.beginPath(); ctx.arc(p.x, p.y, size/2, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  ctx.fill();
+  
+  // Begin line
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  
+  // Prevent default to stop scrolling
+  try { e.preventDefault(); } catch(ex) {}
 }
 
-function move(e){
+function doDraw(e){
   if(!drawing) return;
-  e.preventDefault(); e.stopPropagation();
-  var p = pos(e);
-  ctx.lineTo(p.x, p.y); ctx.stroke();
+  
+  var p = getPos(e);
+  if(!p) return;
+  
+  console.log('DRAW at', p.x.toFixed(0), p.y.toFixed(0));
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  lastX = p.x;
+  lastY = p.y;
+  
+  try { e.preventDefault(); } catch(ex) {}
 }
 
-function up(){
+function stopDraw(e){
   if(!drawing) return;
-  drawing = false; ctx.closePath();
+  console.log('STOP DRAW');
+  drawing = false;
+  ctx.closePath();
 }
 
-canvas.addEventListener('pointerdown', down);
-canvas.addEventListener('pointermove', move);
-canvas.addEventListener('pointerup', up);
-canvas.addEventListener('pointerleave', up);
-canvas.addEventListener('pointercancel', up);
-// Also bind touch directly as fallback
-canvas.addEventListener('touchstart', down, {passive:false});
-canvas.addEventListener('touchmove', move, {passive:false});
-canvas.addEventListener('touchend', up);
-canvas.addEventListener('touchcancel', up);
+// ── Bind events: MULTI-LAYER for Samsung A04 Chrome ──
+// Level 1: Pointer Events (modern Chrome)
+canvas.addEventListener('pointerdown', function(e){
+  console.log('POINTERDOWN');
+  // Only handle if primary pointer
+  if(e.isPrimary || e.pointerType === 'touch'){
+    startDraw(e);
+  }
+});
+
+canvas.addEventListener('pointermove', function(e){
+  if(drawing){ doDraw(e); }
+});
+
+canvas.addEventListener('pointerup', stopDraw);
+canvas.addEventListener('pointerleave', stopDraw);
+canvas.addEventListener('pointercancel', stopDraw);
+
+// Level 2: Touch Events (fallback for Samsung)
+canvas.addEventListener('touchstart', function(e){
+  console.log('TOUCHSTART');
+  startDraw(e);
+}, {passive: false});
+
+canvas.addEventListener('touchmove', function(e){
+  if(drawing){
+    doDraw(e);
+  }
+}, {passive: false});
+
+canvas.addEventListener('touchend', stopDraw);
+canvas.addEventListener('touchcancel', stopDraw);
+
+// Level 3: Mouse events (desktop debug)
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', function(e){ if(drawing) doDraw(e); });
+canvas.addEventListener('mouseup', stopDraw);
+
+// ── Bind to STAGE as fallback (in case canvas doesn't get events) ──
+stage.addEventListener('touchstart', function(e){
+  if(e.target === stage || e.target.tagName === 'VIDEO'){
+    console.log('STAGE TOUCH - forwarding to canvas');
+    // Forward touch to canvas
+    startDraw(e);
+  }
+}, {passive: false});
+
+stage.addEventListener('touchmove', function(e){
+  if(drawing){
+    doDraw(e);
+  }
+}, {passive: false});
+
+stage.addEventListener('touchend', stopDraw);
 
 // ── Tools ──
 function setTool(t){
   tool = t;
-  document.querySelectorAll('.tb').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tb.active').forEach(function(b){ b.classList.remove('active'); });
   var btns = document.querySelectorAll('[data-t]');
   btns.forEach(function(b){ if(b.dataset.t === t) b.classList.add('active'); });
+  
   fit();
-  if(t === 'draw'){ ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = color; ctx.lineWidth = size; canvas.style.cursor = 'crosshair'; }
-  else if(t === 'erase'){ canvas.style.cursor = 'cell'; }
-  else if(t === 'sticker'){ canvas.style.cursor = 'pointer'; }
+  if(t === 'draw'){
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    canvas.style.cursor = 'crosshair';
+  } else if(t === 'erase'){
+    canvas.style.cursor = 'cell';
+  } else if(t === 'sticker'){
+    canvas.style.cursor = 'pointer';
+  }
 }
 
+// Tool button click
 document.querySelectorAll('[data-t]').forEach(function(b){
-  b.addEventListener('click', function(){ setTool(this.dataset.t); });
+  b.addEventListener('click', function(){
+    setTool(this.dataset.t);
+    showToast('Mode: ' + (this.dataset.t === 'draw' ? 'Gambar' : this.dataset.t === 'erase' ? 'Hapus' : 'Stiker'));
+  });
 });
 
 // ── Colors ──
 var cr = document.getElementById('colorRow');
 COLORS.forEach(function(c){
   var d = document.createElement('div');
-  d.className = 'cdot'; if(c === color) d.classList.add('active');
+  d.className = 'cdot';
+  d.dataset.color = c;
+  if(c === color) d.classList.add('active');
   d.style.backgroundColor = c;
-  d.addEventListener('click', function(){
+  
+  d.addEventListener('click', function(e){
+    e.stopPropagation();
     color = c;
     document.querySelectorAll('.cdot').forEach(function(x){ x.classList.remove('active'); });
     d.classList.add('active');
-    if(tool === 'draw'){ ctx.strokeStyle = c; ctx.globalCompositeOperation = 'source-over'; }
+    if(tool === 'draw'){
+      ctx.strokeStyle = c;
+      ctx.globalCompositeOperation = 'source-over';
+    }
   });
+  
+  d.addEventListener('touchend', function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    color = c;
+    document.querySelectorAll('.cdot').forEach(function(x){ x.classList.remove('active'); });
+    d.classList.add('active');
+    if(tool === 'draw'){
+      ctx.strokeStyle = c;
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  });
+  
   cr.appendChild(d);
 });
 
@@ -252,28 +387,44 @@ COLORS.forEach(function(c){
 var si = document.getElementById('sizeIn');
 var sv = document.getElementById('sizeVal');
 si.addEventListener('input', function(){
-  size = parseInt(this.value); sv.textContent = size;
+  size = parseInt(this.value);
+  sv.textContent = size;
   if(tool === 'draw') ctx.lineWidth = size;
-  if(tool === 'erase') ctx.lineWidth = size * 2;
+  if(tool === 'erase') ctx.lineWidth = size * 3;
+});
+si.addEventListener('change', function(){
+  size = parseInt(this.value);
+  sv.textContent = size;
 });
 
 // ── Stickers ──
 var sr = document.getElementById('stickerRow');
 STICKERS.forEach(function(s){
   var b = document.createElement('button');
-  b.className = 'sbtn'; b.textContent = s; b.title = s;
-  b.addEventListener('click', function(){
-    sticker = s; setTool('sticker');
+  b.className = 'sbtn';
+  b.textContent = s;
+  b.title = s;
+  
+  function pickSticker(e){
+    e.stopPropagation();
+    e.preventDefault();
+    stickerToPlace = s;
+    setTool('sticker');
     document.querySelectorAll('.sbtn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active'); canvas.style.cursor = 'grab';
-  });
+    b.classList.add('active');
+    canvas.style.cursor = 'grab';
+    showToast('Tap layar untuk tempel ' + s);
+  }
+  
+  b.addEventListener('click', pickSticker);
+  b.addEventListener('touchend', pickSticker);
   sr.appendChild(b);
 });
 
 // ── Clear ──
 document.getElementById('btnClear').addEventListener('click', function(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  show('Kanvas bersih ✅');
+  showToast('Kanvas bersih ✅');
 });
 
 // ── Save ──
@@ -281,23 +432,25 @@ document.getElementById('btnSave').addEventListener('click', function(){
   var a = document.createElement('a');
   a.download = 'doodle_' + Date.now() + '.png';
   a.href = canvas.toDataURL('image/png');
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  show('Foto tersimpan 📸');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('Foto tersimpan 📸');
 });
 
 // ── Record ──
 var recBtn = document.getElementById('btnRec');
 recBtn.addEventListener('click', function(){
-  if(!camReady){ show('Kamera belum siap 🚫'); return; }
+  if(!camReady){ showToast('Kamera belum siap 🚫'); return; }
   if(recording){ stopRec(); } else { startRec(); }
 });
 
 function startRec(){
-  if(typeof MediaRecorder === 'undefined'){ show('Browser tidak mendukung ⚠️'); return; }
+  if(typeof MediaRecorder === 'undefined'){ showToast('Browser tidak mendukung ⚠️'); return; }
   var stream;
   try { stream = stage.captureStream ? stage.captureStream(30) : canvas.captureStream(30); }
   catch(e){ stream = canvas.captureStream(30); }
-  if(!stream){ show('Tidak bisa merekam ⚠️'); return; }
+  if(!stream){ showToast('Tidak bisa merekam ⚠️'); return; }
   chunks = [];
   try { recorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'}); }
   catch(e){ try { recorder = new MediaRecorder(stream, {mimeType:'video/webm'}); } catch(e2){ recorder = new MediaRecorder(stream); } }
@@ -307,38 +460,50 @@ function startRec(){
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.download = 'doodle_' + Date.now() + '.webm';
-    a.href = url; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url); show('Video tersimpan 🎬');
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Video tersimpan 🎬');
   };
-  recorder.start(); recording = true;
-  recBtn.classList.add('rec'); recBtn.innerHTML = '⏹️ Stop';
+  recorder.start();
+  recording = true;
+  recBtn.classList.add('rec');
+  recBtn.innerHTML = '⏹️ Stop';
 }
 
 function stopRec(){
   if(recorder && recorder.state !== 'inactive') recorder.stop();
   recording = false;
-  recBtn.classList.remove('rec'); recBtn.innerHTML = '⏺️ Video';
+  recBtn.classList.remove('rec');
+  recBtn.innerHTML = '⏺️';
 }
 
 // ── Camera ──
 document.getElementById('startBtn').addEventListener('click', function(){
   fit();
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    fallbackBg(); return;
+    fallbackBg();
+    return;
   }
   navigator.mediaDevices.getUserMedia({
-    video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio:false
+    video: {facingMode:'environment', width:{ideal:640}, height:{ideal:480}},
+    audio: false
   }).then(function(stream){
     video.srcObject = stream;
     video.onloadedmetadata = function(){
-      video.play(); camReady = true; fit();
+      video.play();
+      camReady = true;
+      setTimeout(fit, 200);
+      setTimeout(fit, 800);
     };
     overlay.style.display = 'none';
-    show('Kamera siap! Sentuh layar untuk menggambar 🎨');
-    setTimeout(fit, 300);
-    setTimeout(fit, 1000);
+    showToast('📱 Sentuh & geser di layar untuk menggambar');
+    setTimeout(fit, 100);
+    setTimeout(fit, 500);
   }).catch(function(err){
-    console.error(err);
+    console.error('Camera error:', err);
     fallbackBg();
   });
 });
@@ -349,20 +514,30 @@ function fallbackBg(){
   camReady = true;
   stage.style.background = '#2d3a4a url(https://picsum.photos/seed/doodle/800/450) center/cover no-repeat';
   fit();
-  setTimeout(fit, 100);
-  show('Mode latar statis — sentuh layar untuk menggambar 🎨');
+  setTimeout(fit, 200);
+  showToast('📱 Mode latar — sentuh & geser untuk menggambar');
 }
 
 // ── Toast ──
 var toastTimer;
-function show(msg){
-  toast.textContent = msg; toast.classList.add('show');
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2500);
 }
 
 // ── Init ──
 setTool('draw');
+fit();
+
+// Force refit after everything loads
+window.addEventListener('load', function(){
+  setTimeout(fit, 100);
+  setTimeout(fit, 500);
+  setTimeout(fit, 1500);
+});
+
 })();
 </script>
 </body>
