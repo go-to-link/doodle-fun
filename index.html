@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR Doodle Fun — Real AR Camera</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
+  background:#0f172a;
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+}
+
+/* ── Video + Canvas layer ── */
+.ar-stage{position:relative;flex:1;overflow:hidden;background:#000}
+.ar-stage video,.ar-stage canvas{
+  position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover
+}
+.ar-stage canvas{z-index:2;touch-action:none;cursor:crosshair}
+.ar-stage video{z-index:1}
+
+/* ── Toolbar ── */
+.toolbar{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px;background:rgba(15,23,42,.95);
+  backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.1);
+  overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+  z-index:10;flex-shrink:0;
+}
+.toolbar::-webkit-scrollbar{display:none}
+
+/* ── Buttons ── */
+.tb-btn{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;
+  border:2px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:all .15s;font-family:inherit;
+  background:rgba(255,255,255,.08);color:#e2e8f0;
+}
+.tb-btn:hover{background:rgba(255,255,255,.15)}
+.tb-btn.active{border-color:#38bdf8;background:rgba(56,189,248,.15);color:#38bdf8}
+.tb-btn.danger{color:#ef4444}
+.tb-btn.danger:hover{background:rgba(239,68,68,.15)}
+.tb-btn.success{color:#10b981}
+.tb-btn.success:hover{background:rgba(16,185,129,.15)}
+.tb-btn.warn{color:#f59e0b}
+.tb-btn.recording{color:#ef4444;animation:pulse 1.2s infinite;border-color:#ef4444;background:rgba(239,68,68,.15)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Color dots ── */
+.color-grid{display:flex;gap:4px;align-items:center}
+.color-dot{
+  width:28px;height:28px;border-radius:50%;border:3px solid transparent;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(255,255,255,.1) inset;
+}
+.color-dot.active{border-color:#fff;box-shadow:0 0 8px rgba(255,255,255,.5),0 0 0 1px rgba(255,255,255,.1) inset;transform:scale(1.15)}
+.color-dot:hover{transform:scale(1.1)}
+
+/* ── Size slider ── */
+.size-slider{display:flex;align-items:center;gap:6px}
+.size-slider input[type=range]{width:60px;accent-color:#38bdf8}
+
+/* ── Sticker panel ── */
+.sticker-row{display:flex;gap:2px;align-items:center}
+.sticker-btn{font-size:22px;padding:4px 6px;border-radius:8px;border:2px solid transparent;background:transparent;cursor:pointer;transition:all .15s}
+.sticker-btn:hover{background:rgba(255,255,255,.1)}
+.sticker-btn.active{border-color:#a78bfa;background:rgba(167,139,250,.2)}
+
+/* ── Spacer ── */
+.spacer{flex:1}
+
+/* ── Overlay (permission prompt) ── */
+.overlay{
+  position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  background:rgba(15,23,42,.9);backdrop-filter:blur(8px)
+}
+.overlay-box{
+  background:rgba(30,41,59,.95);border:1px solid rgba(255,255,255,.15);
+  border-radius:16px;padding:32px;max-width:380px;text-align:center;color:#e2e8f0
+}
+.overlay-box h2{font-size:20px;margin-bottom:8px}
+.overlay-box p{font-size:13px;color:#94a3b8;margin-bottom:20px;line-height:1.6}
+.overlay-box button{
+  padding:12px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;
+  border:0;background:#38bdf8;color:#0f172a;font-family:inherit;transition:all .15s
+}
+.overlay-box button:hover{background:#7dd3fc}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(16,185,129,.95);color:#fff;padding:10px 24px;
+  border-radius:12px;font-size:13px;font-weight:700;z-index:200;
+  opacity:0;transition:opacity .3s;pointer-events:none
+}
+.toast.show{opacity:1}
+
+@media(max-width:600px){
+  .tb-btn{padding:6px 10px;font-size:10px;gap:2px}
+  .tb-btn svg{width:16px;height:16px}
+  .color-dot{width:22px;height:22px}
+  .sticker-btn{font-size:18px;padding:3px 5px}
+}
+</style>
+</head>
+<body>
+
+<!-- Permission / start overlay -->
+<div class="overlay" id="startOverlay">
+  <div class="overlay-box">
+    <h2>🎨 AR Doodle Fun</h2>
+    <p>Gambar doodle lucu, tempel stiker, di atas kamera beneran. Butuh akses kamera untuk mulai.</p>
+    <button id="startBtn">📷 Mulai AR</button>
+  </div>
+</div>
+
+<!-- AR Stage -->
+<div class="ar-stage" id="arStage">
+  <video id="camVideo" playsinline autoplay muted></video>
+  <canvas id="drawCanvas"></canvas>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar" id="toolbar">
+  <!-- Tools -->
+  <button class="tb-btn active" data-tool="draw" id="btnDraw">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+    Gambar
+  </button>
+  <button class="tb-btn" data-tool="erase" id="btnErase">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-9H9m2-4h4"/></svg>
+    Hapus
+  </button>
+  <button class="tb-btn" data-tool="sticker" id="btnSticker">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Stiker
+  </button>
+
+  <span style="color:rgba(255,255,255,.2);margin:0 4px">|</span>
+
+  <!-- Color dots -->
+  <div class="color-grid" id="colorGrid"></div>
+
+  <span style="color:rgba(255,255,255,.2);margin:0 4px">|</span>
+
+  <!-- Brush size -->
+  <div class="size-slider">
+    <span style="font-size:10px;color:#94a3b8">Ukuran</span>
+    <input type="range" id="sizeSlider" min="2" max="30" value="5">
+    <span style="font-size:11px;color:#e2e8f0;min-width:20px;text-align:center" id="sizeVal">5</span>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Sticker row -->
+  <div class="sticker-row" id="stickerRow"></div>
+
+  <div class="spacer"></div>
+
+  <!-- Actions -->
+  <button class="tb-btn warn" id="btnClear">🗑️ Bersihkan</button>
+  <button class="tb-btn success" id="btnSave">📸 Foto</button>
+  <button class="tb-btn warn" id="btnRecord">⏺️ Rekam</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ── DOM ──
+var video  = document.getElementById('camVideo');
+var canvas = document.getElementById('drawCanvas');
+var ctx    = canvas.getContext('2d');
+var stage  = document.getElementById('arStage');
+var overlay = document.getElementById('startOverlay');
+var startBtn = document.getElementById('startBtn');
+var sizeSlider = document.getElementById('sizeSlider');
+var sizeVal = document.getElementById('sizeVal');
+var toast = document.getElementById('toast');
+
+var COLORS = [
+  '#FFFFFF','#FF0000','#FF6600','#FFCC00','#00FF00','#00CCFF',
+  '#0066FF','#9933FF','#FF00FF','#FF69B4','#00FFFF','#808080','#000000'
+];
+var STICKERS = [
+  '😊','😂','😍','🤩','👍','❤️','🌟','🚀','🌈','🍕',
+  '🐱','🐶','🌸','🎉','💡','🔥','👻','🤖','👑','💯','✨','🦋','🎈','🍭'
+];
+
+// ── State ──
+var isDrawing    = false;
+var currentColor = '#FFFFFF';
+var brushSize    = 5;
+var currentTool  = 'draw';
+var stickerToPlace = null;
+var mediaRecorder = null;
+var recordedChunks = [];
+var isRecording  = false;
+var camReady     = false;
+
+// ── Resize canvas to match video ──
+function resizeCanvas(){
+  var r = stage.getBoundingClientRect();
+  if(canvas.width !== r.width || canvas.height !== r.height){
+    canvas.width  = r.width;
+    canvas.height = r.height;
+    // Restore context properties
+    ctx.lineJoin   = 'round';
+    ctx.lineCap    = 'round';
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth   = brushSize;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+}
+
+// ── Get position ──
+function getPos(e){
+  var r = canvas.getBoundingClientRect();
+  var cx,cy;
+  if(e.touches && e.touches.length>0){cx=e.touches[0].clientX;cy=e.touches[0].clientY}
+  else{cx=e.clientX;cy=e.clientY}
+  return {x:cx-r.left,y:cy-r.top};
+}
+
+// ── Drawing ──
+function startDraw(e){
+  e.preventDefault();
+  resizeCanvas();
+  if(currentTool==='sticker'){
+    if(stickerToPlace){
+      var p=getPos(e);
+      ctx.font=(brushSize*10)+'px Arial';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(stickerToPlace,p.x,p.y);
+      stickerToPlace=null;
+      setTool('draw');
+    }
+    return;
+  }
+  isDrawing=true;
+  var p=getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y);
+}
+
+function doDraw(e){
+  if(!isDrawing)return;
+  e.preventDefault();
+  var p=getPos(e);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+}
+
+function stopDraw(){
+  if(!isDrawing)return;
+  isDrawing=false;
+  ctx.closePath();
+}
+
+canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('mousemove',doDraw);
+canvas.addEventListener('mouseup',stopDraw);
+canvas.addEventListener('mouseout',stopDraw);
+canvas.addEventListener('touchstart',startDraw,{passive:false});
+canvas.addEventListener('touchmove',doDraw,{passive:false});
+canvas.addEventListener('touchend',stopDraw);
+canvas.addEventListener('touchcancel',stopDraw);
+
+window.addEventListener('resize',function(){
+  resizeCanvas();
+});
+
+// ── Tools ──
+function setTool(tool){
+  currentTool=tool;
+  document.querySelectorAll('[data-tool]').forEach(function(b){b.classList.remove('active')});
+  var btn=document.querySelector('[data-tool="'+tool+'"]');
+  if(btn)btn.classList.add('active');
+
+  resizeCanvas();
+  if(tool==='draw'){
+    ctx.globalCompositeOperation='source-over';
+    ctx.strokeStyle=currentColor;
+    ctx.lineWidth=brushSize;
+    canvas.style.cursor='crosshair';
+  }else if(tool==='erase'){
+    ctx.globalCompositeOperation='destination-out';
+    ctx.lineWidth=brushSize*2;
+    canvas.style.cursor='cell';
+  }else if(tool==='sticker'){
+    canvas.style.cursor='pointer';
+  }
+}
+
+document.getElementById('btnDraw').addEventListener('click',function(){setTool('draw')});
+document.getElementById('btnErase').addEventListener('click',function(){setTool('erase')});
+document.getElementById('btnSticker').addEventListener('click',function(){setTool('sticker')});
+
+// ── Colors ──
+var colorGrid=document.getElementById('colorGrid');
+COLORS.forEach(function(c){
+  var d=document.createElement('div');
+  d.className='color-dot';
+  if(c===currentColor)d.classList.add('active');
+  d.style.backgroundColor=c;
+  d.addEventListener('click',function(){
+    currentColor=c;
+    document.querySelectorAll('.color-dot').forEach(function(x){x.classList.remove('active')});
+    d.classList.add('active');
+    if(currentTool==='draw'){
+      ctx.strokeStyle=c;
+      ctx.globalCompositeOperation='source-over';
+    }
+  });
+  colorGrid.appendChild(d);
+});
+
+// ── Size slider ──
+sizeSlider.addEventListener('input',function(){
+  brushSize=parseInt(this.value);
+  sizeVal.textContent=brushSize;
+  if(currentTool==='draw')ctx.lineWidth=brushSize;
+  if(currentTool==='erase')ctx.lineWidth=brushSize*2;
+});
+
+// ── Stickers ──
+var stickerRow=document.getElementById('stickerRow');
+STICKERS.forEach(function(s){
+  var b=document.createElement('button');
+  b.className='sticker-btn';
+  b.textContent=s;
+  b.title=s;
+  b.addEventListener('click',function(){
+    stickerToPlace=s;
+    setTool('sticker');
+    document.querySelectorAll('.sticker-btn').forEach(function(x){x.classList.remove('active')});
+    b.classList.add('active');
+    canvas.style.cursor='grab';
+  });
+  stickerRow.appendChild(b);
+});
+
+// ── Clear ──
+document.getElementById('btnClear').addEventListener('click',function(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  showToast('Kanvas bersih ✅');
+});
+
+// ── Save ──
+document.getElementById('btnSave').addEventListener('click',function(){
+  var link=document.createElement('a');
+  link.download='ar_doodle_'+Date.now()+'.png';
+  link.href=canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Foto tersimpan 📸');
+});
+
+// ── Record Video ──
+var btnRecord=document.getElementById('btnRecord');
+btnRecord.addEventListener('click',function(){
+  if(!camReady){showToast('Kamera belum siap 🚫');return}
+  if(isRecording){
+    stopRecording();
+  }else{
+    startRecording();
+  }
+});
+
+function startRecording(){
+  if(typeof MediaRecorder==='undefined'){showToast('Browser tidak mendukung ⚠️');return}
+  // Capture the ar-stage as a stream
+  var stream=stage.captureStream?stage.captureStream(30):null;
+  if(!stream){
+    // Fallback: capture only canvas
+    stream=canvas.captureStream(30);
+  }
+  if(!stream){showToast('Tidak bisa merekam ⚠️');return}
+  recordedChunks=[];
+  try{
+    mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'});
+  }catch(e){
+    try{mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm'})}
+    catch(e2){mediaRecorder=new MediaRecorder(stream)}
+  }
+  mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recordedChunks.push(e.data)};
+  mediaRecorder.onstop=function(){
+    var blob=new Blob(recordedChunks,{type:'video/webm'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.download='ar_doodle_'+Date.now()+'.webm';
+    a.href=url;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Video tersimpan 🎬');
+  };
+  mediaRecorder.start();
+  isRecording=true;
+  btnRecord.classList.add('recording');
+  btnRecord.innerHTML='⏹️ Stop';
+}
+
+function stopRecording(){
+  if(mediaRecorder&&mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop();
+  }
+  isRecording=false;
+  btnRecord.classList.remove('recording');
+  btnRecord.innerHTML='⏺️ Rekam';
+}
+
+// ── Camera ──
+function startCamera(){
+  resizeCanvas();
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    showToast('Browser tidak mendukung kamera 🚫');
+    overlay.style.display='none';
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},
+    audio:false
+  }).then(function(stream){
+    video.srcObject=stream;
+    video.onloadedmetadata=function(){
+      video.play();
+      camReady=true;
+      resizeCanvas();
+    };
+    overlay.style.display='none';
+    showToast('Kamera siap! Mulai menggambar 🎨');
+  }).catch(function(err){
+    console.error('Camera error:',err);
+    overlay.style.display='none';
+    // Fallback: use static background
+    var img=new Image();
+    img.src='https://picsum.photos/seed/ARDoodle/800/450';
+    img.onload=function(){
+      stage.style.backgroundImage='url('+img.src+')';
+      stage.style.backgroundSize='cover';
+      stage.style.backgroundPosition='center';
+      showToast('Kamera tidak tersedia, pakai latar statis ⚠️');
+    };
+  });
+}
+
+startBtn.addEventListener('click',startCamera);
+
+// ── Toast ──
+var toastTimer;
+function showToast(msg){
+  toast.textContent=msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){toast.classList.remove('show')},2000);
+}
+
+// ── Init ──
+setTool('draw');
+resizeCanvas();
+})();
+</script>
+</body>
+</html>
