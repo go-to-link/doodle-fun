@@ -11,22 +11,29 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 
 #stage{position:relative;flex:1;overflow:hidden;background:#1a1a2e}
 #stage canvas{position:absolute;top:0;left:0;z-index:3;touch-action:none}
-#stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
+#stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1; transform: scaleX(-1);} /* Kamera di-mirror agar tidak pusing */
 #stage .bg-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
 
-#startOverlay{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.95)}
-.overlay-box{background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:36px 28px;max-width:360px;text-align:center;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.overlay-box h2{font-size:22px;margin-bottom:8px}
-.overlay-box p{font-size:14px;color:#94a3b8;margin-bottom:22px;line-height:1.6}
-.overlay-box button{padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:0;background:#38bdf8;color:#0f172a;font-family:inherit}
+#startOverlay{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.95); backdrop-filter:blur(10px)}
+.overlay-box{background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:40px 28px;max-width:360px;text-align:center;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.overlay-box h2{font-size:24px;margin-bottom:12px; background:linear-gradient(to right, #38bdf8, #a855f7); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+.overlay-box p{font-size:14px;color:#94a3b8;margin-bottom:28px;line-height:1.6}
+.overlay-box button{padding:14px 40px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;border:0;background:linear-gradient(135deg, #38bdf8, #818cf8);color:#fff;font-family:inherit; transition:transform 0.2s; box-shadow:0 10px 20px rgba(56,189,248,.3)}
+.overlay-box button:active{transform:scale(0.95)}
 
-#toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(15,23,42,.95);border-top:1px solid rgba(255,255,255,.12);overflow-x:auto;scrollbar-width:none;z-index:10;flex-shrink:0;-webkit-overflow-scrolling:touch}
+#toolbar{display:flex;align-items:center;gap:8px;padding:12px 14px;background:rgba(15,23,42,.95);border-top:1px solid rgba(255,255,255,.12);overflow-x:auto;scrollbar-width:none;z-index:10;flex-shrink:0;-webkit-overflow-scrolling:touch}
 #toolbar::-webkit-scrollbar{display:none}
 
 .tb{display:flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit;min-height:44px;background:rgba(255,255,255,.08);color:#e2e8f0;transition:all .15s}
 .tb:active{transform:scale(.95)}
 .tb.active{border-color:#38bdf8;background:rgba(56,189,248,.15);color:#38bdf8}
-.tb.draw{color:#fff;background:rgba(56,189,248,.3)}
+
+/* Warna Khusus Kuas */
+.tb.draw.active{color:#fff;background:rgba(56,189,248,.3);border-color:#38bdf8;}
+.tb.neon{color:#fde047;}
+.tb.neon.active{color:#fff;background:rgba(253,224,71,.3);border-color:#fde047;box-shadow:0 0 15px rgba(253,224,71,.4);}
+.tb.rainbow{background:linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; border:1px solid rgba(255,255,255,.2)}
+.tb.rainbow.active{background:linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); color:#fff; -webkit-background-clip:initial; -webkit-text-fill-color:initial; border-color:#fff;}
 .tb.erase{color:#ef4444}
 .tb.sticker{color:#a78bfa}
 .tb svg{width:20px;height:20px;flex-shrink:0;pointer-events:none}
@@ -47,26 +54,24 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 .sz span{font-size:11px;color:#94a3b8;white-space:nowrap}
 
 .s1{flex:1}
-.sep{color:rgba(255,255,255,.2);margin:0 2px}
-.rec{border-color:#ef4444!important;background:rgba(239,68,68,.2)!important;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sep{color:rgba(255,255,255,.2);margin:0 4px}
 
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,.95);color:#fff;padding:10px 24px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
-#toast.show{opacity:1}
+#toast{position:fixed;top:24px;left:50%;transform:translate(-50%, -20px);background:rgba(16,185,129,.95);color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;z-index:9999;opacity:0;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);pointer-events:none; box-shadow:0 10px 25px rgba(0,0,0,.3)}
+#toast.show{opacity:1; transform:translate(-50%, 0);}
 
-#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;color:rgba(255,255,255,.5);font-size:15px;text-align:center;pointer-events:none;transition:opacity .5s;text-shadow:0 0 10px rgba(0,0,0,.8)}
+#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;color:rgba(255,255,255,.6);font-size:16px;font-weight:bold;text-align:center;pointer-events:none;transition:opacity .5s;text-shadow:0 2px 10px rgba(0,0,0,.8); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:30px; backdrop-filter:blur(5px);}
 
-/* debug dot */
-#debugDot{position:fixed;width:12px;height:12px;border-radius:50%;background:#0f0;z-index:99999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);box-shadow:0 0 10px #0f0}
+#debugDot{position:fixed;width:12px;height:12px;border-radius:50%;background:#38bdf8;z-index:99999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);box-shadow:0 0 15px #38bdf8}
 </style>
 </head>
 <body>
 
 <div id="startOverlay">
   <div class="overlay-box">
-    <h2>🎨 AR Doodle Fun</h2>
-    <p>Gambar langsung di atas kamera. Klik <b>Mulai AR</b>, izinkan kamera, lalu sentuh & geser di layar.</p>
-    <button id="startBtn">📷 Mulai AR</button>
+    <div style="font-size: 50px; margin-bottom: 10px;">🦄</div>
+    <h2>AR Doodle Fun</h2>
+    <p>Ubah duniamu jadi kanvas! Gambar <b>Neon</b> atau <b>Pelangi</b> langsung di atas layar kameramu.</p>
+    <button id="startBtn">📷 Nyalakan Kamera</button>
   </div>
 </div>
 
@@ -79,28 +84,40 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 <div id="debugDot"></div>
 
 <div id="toolbar">
+  <!-- Kuas Normal -->
   <button class="tb draw active" data-t="draw">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-    Gambar
+    Normal
   </button>
+  <!-- Kuas Neon Baru -->
+  <button class="tb neon" data-t="neon">✨ Neon</button>
+  <!-- Kuas Pelangi Baru -->
+  <button class="tb rainbow" data-t="rainbow">🌈 Pelangi</button>
+
+  <span class="sep">|</span>
+  
   <button class="tb erase" data-t="erase">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-9H9m2-4h4"/></svg>
     Hapus
   </button>
-  <button class="tb sticker" data-t="sticker">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    Stiker
-  </button>
+  
   <span class="sep">|</span>
+  
   <div class="color-row" id="colorRow"></div>
+  
   <span class="sep">|</span>
-  <div class="sz"><span>Ukuran</span><input type="range" id="sizeIn" min="2" max="30" value="5"><span id="sizeVal">5</span></div>
-  <div class="s1"></div>
+  
+  <div class="sz"><span>Ukuran</span><input type="range" id="sizeIn" min="2" max="30" value="8"><span id="sizeVal">8</span></div>
+  
+  <span class="sep">|</span>
+  
+  <button class="tb sticker" data-t="sticker">Stiker</button>
   <div class="sticker-row" id="stickerRow"></div>
+  
   <div class="s1"></div>
-  <button class="tb" id="btnClear" style="color:#f59e0b">🗑️</button>
-  <button class="tb" id="btnSave" style="color:#10b981">📸</button>
-  <button class="tb" id="btnRec" style="color:#f59e0b">⏺️</button>
+  
+  <button class="tb" id="btnClear" style="color:#f59e0b" title="Bersihkan">🗑️</button>
+  <button class="tb" id="btnSave" style="color:#10b981; font-size:16px;" title="Simpan Foto">📸 Simpan</button>
 </div>
 
 <div id="toast"></div>
@@ -117,14 +134,14 @@ var overlay = document.getElementById('startOverlay');
 var debugDot = document.getElementById('debugDot');
 
 var COLORS = ['#FFFFFF','#FF0000','#FF6600','#FFCC00','#00FF00','#00CCFF','#0066FF','#9933FF','#FF00FF','#FF69B4','#00FFFF','#808080','#000000'];
-var STICKERS = ['😊','😂','😍','🤩','👍','❤️','🌟','🚀','🌈','🍕','🐱','🐶','🌸','🎉','💡','🔥','👻','🤖','👑','💯','✨','🦋','🎈','🍭'];
+var STICKERS = ['⭐','🔥','💡','🦋','✨','🎈','🍕','👻','🤖','👑','💯','🎉'];
 
-var color = '#FFFFFF', size = 5, tool = 'draw', stickerToPlace = null;
+var color = '#FFFFFF', size = 8, tool = 'draw', stickerToPlace = null;
 var drawing = false, lastX = 0, lastY = 0;
 var camReady = false;
-var recorder = null, chunks = [], recording = false;
+var hue = 0; // Untuk Kuas Pelangi
 
-// ── Canvas sizing ── FORCE to full stage size
+// ── Canvas sizing ──
 function fit(){
   var w = stage.clientWidth;
   var h = stage.clientHeight;
@@ -132,78 +149,55 @@ function fit(){
   if(h < 1) h = window.innerHeight;
   
   if(canvas.width !== w || canvas.height !== h){
+    // Simpan gambar sebelum di-resize agar tidak hilang
+    var imgData = null;
+    if(canvas.width > 0 && canvas.height > 0) {
+        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
     canvas.width = w;
     canvas.height = h;
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    console.log('Canvas sized:', w + 'x' + h);
-    // Restore context
+    
+    // Kembalikan gambar
+    if(imgData) ctx.putImageData(imgData, 0, 0);
+
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    ctx.globalCompositeOperation = 'source-over';
   }
 }
 
-// Fit immediately and repeatedly
-fit();
-setTimeout(fit, 100);
-setTimeout(fit, 500);
-setTimeout(fit, 1000);
-setTimeout(fit, 2000);
-window.addEventListener('resize', fit);
-window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
+// Fit trigger
+fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
 
 // ── Get touch position ──
 function getPos(e){
   var r = canvas.getBoundingClientRect();
   var cx, cy;
+  if(e.touches && e.touches.length > 0){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+  else if(e.clientX !== undefined && e.clientY !== undefined){ cx = e.clientX; cy = e.clientY; }
+  else if(e.changedTouches && e.changedTouches.length > 0){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
+  else { return null; }
   
-  // Try touch first
-  if(e.touches && e.touches.length > 0){
-    cx = e.touches[0].clientX;
-    cy = e.touches[0].clientY;
-  }
-  // Then pointer
-  else if(e.clientX !== undefined && e.clientY !== undefined){
-    cx = e.clientX;
-    cy = e.clientY;
-  }
-  // Fallback: changedTouches
-  else if(e.changedTouches && e.changedTouches.length > 0){
-    cx = e.changedTouches[0].clientX;
-    cy = e.changedTouches[0].clientY;
-  }
-  else {
-    return null;
-  }
+  var x = cx - r.left; var y = cy - r.top;
   
-  var x = cx - r.left;
-  var y = cy - r.top;
-  
-  // Show debug dot
-  debugDot.style.left = cx + 'px';
-  debugDot.style.top = cy + 'px';
-  debugDot.style.opacity = '1';
-  setTimeout(function(){ debugDot.style.opacity = '0'; }, 200);
-  
-  return {x:x, y:y, cx:cx, cy:cy};
+  debugDot.style.left = cx + 'px'; debugDot.style.top = cy + 'px';
+  debugDot.style.opacity = '1'; setTimeout(function(){ debugDot.style.opacity = '0'; }, 200);
+  return {x:x, y:y};
 }
 
 // ── Drawing ──
 function startDraw(e){
-  console.log('START DRAW', e.type, 'tool:', tool);
-  fit();
   guide.style.opacity = '0';
   
   if(tool === 'sticker'){
     if(stickerToPlace){
-      var p = getPos(e);
-      if(!p) return;
+      var p = getPos(e); if(!p) return;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.shadowBlur = 0; // Matikan neon jika sedang tempel stiker
       ctx.font = (size * 10) + 'px Arial';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = color;
       ctx.fillText(stickerToPlace, p.x, p.y);
       stickerToPlace = null;
       setTool('draw');
@@ -212,139 +206,96 @@ function startDraw(e){
     return;
   }
   
-  var p = getPos(e);
-  if(!p) return;
+  var p = getPos(e); if(!p) return;
+  drawing = true; lastX = p.x; lastY = p.y;
   
-  drawing = true;
-  lastX = p.x;
-  lastY = p.y;
+  // Set Tool Properties
+  ctx.lineWidth = tool === 'erase' ? size * 3 : size;
   
-  // Set composite mode
   if(tool === 'erase'){
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = size * 3;
+    ctx.shadowBlur = 0;
   } else {
     ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
+    
+    // Logika Kuas Neon & Pelangi
+    if(tool === 'rainbow') {
+        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.shadowBlur = 0;
+    } else if (tool === 'neon') {
+        ctx.strokeStyle = '#ffffff'; // Inti garis warna putih
+        ctx.shadowBlur = size * 2;   // Glow
+        ctx.shadowColor = color;     // Warna cahaya
+    } else {
+        ctx.strokeStyle = color;
+        ctx.shadowBlur = 0;
+    }
   }
   
-  // Draw dot at start position
-  ctx.beginPath();
-  ctx.arc(p.x, p.y, size/2, 0, Math.PI*2);
-  ctx.fillStyle = tool === 'erase' ? 'rgba(0,0,0,0)' : color;
-  ctx.fill();
-  
-  // Begin line
   ctx.beginPath();
   ctx.moveTo(p.x, p.y);
   
-  // Prevent default to stop scrolling
   try { e.preventDefault(); } catch(ex) {}
 }
 
 function doDraw(e){
   if(!drawing) return;
+  var p = getPos(e); if(!p) return;
   
-  var p = getPos(e);
-  if(!p) return;
+  if(tool === 'rainbow') {
+      hue += 5; if(hue > 360) hue = 0;
+      ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+      
+      // Untuk rainbow, kita harus mulai path baru tiap detik agar warnanya berubah dinamis
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+  } else {
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+  }
   
-  console.log('DRAW at', p.x.toFixed(0), p.y.toFixed(0));
-  ctx.lineTo(p.x, p.y);
-  ctx.stroke();
-  lastX = p.x;
-  lastY = p.y;
-  
+  lastX = p.x; lastY = p.y;
   try { e.preventDefault(); } catch(ex) {}
 }
 
 function stopDraw(e){
   if(!drawing) return;
-  console.log('STOP DRAW');
   drawing = false;
   ctx.closePath();
 }
 
-// ── Bind events: MULTI-LAYER for Samsung A04 Chrome ──
-// Level 1: Pointer Events (modern Chrome)
-canvas.addEventListener('pointerdown', function(e){
-  console.log('POINTERDOWN');
-  // Only handle if primary pointer
-  if(e.isPrimary || e.pointerType === 'touch'){
-    startDraw(e);
-  }
-});
-
-canvas.addEventListener('pointermove', function(e){
-  if(drawing){ doDraw(e); }
-});
-
+// Event Bindings
+canvas.addEventListener('pointerdown', function(e){ if(e.isPrimary || e.pointerType === 'touch') startDraw(e); });
+canvas.addEventListener('pointermove', function(e){ if(drawing) doDraw(e); });
 canvas.addEventListener('pointerup', stopDraw);
 canvas.addEventListener('pointerleave', stopDraw);
 canvas.addEventListener('pointercancel', stopDraw);
-
-// Level 2: Touch Events (fallback for Samsung)
-canvas.addEventListener('touchstart', function(e){
-  console.log('TOUCHSTART');
-  startDraw(e);
-}, {passive: false});
-
-canvas.addEventListener('touchmove', function(e){
-  if(drawing){
-    doDraw(e);
-  }
-}, {passive: false});
-
+canvas.addEventListener('touchstart', function(e){ startDraw(e); }, {passive: false});
+canvas.addEventListener('touchmove', function(e){ if(drawing) doDraw(e); }, {passive: false});
 canvas.addEventListener('touchend', stopDraw);
-canvas.addEventListener('touchcancel', stopDraw);
-
-// Level 3: Mouse events (desktop debug)
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mousemove', function(e){ if(drawing) doDraw(e); });
-canvas.addEventListener('mouseup', stopDraw);
-
-// ── Bind to STAGE as fallback (in case canvas doesn't get events) ──
-stage.addEventListener('touchstart', function(e){
-  if(e.target === stage || e.target.tagName === 'VIDEO'){
-    console.log('STAGE TOUCH - forwarding to canvas');
-    // Forward touch to canvas
-    startDraw(e);
-  }
-}, {passive: false});
-
-stage.addEventListener('touchmove', function(e){
-  if(drawing){
-    doDraw(e);
-  }
-}, {passive: false});
-
-stage.addEventListener('touchend', stopDraw);
 
 // ── Tools ──
 function setTool(t){
   tool = t;
   document.querySelectorAll('.tb.active').forEach(function(b){ b.classList.remove('active'); });
-  var btns = document.querySelectorAll('[data-t]');
-  btns.forEach(function(b){ if(b.dataset.t === t) b.classList.add('active'); });
+  document.querySelectorAll('[data-t]').forEach(function(b){ if(b.dataset.t === t) b.classList.add('active'); });
   
-  fit();
-  if(t === 'draw'){
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    canvas.style.cursor = 'crosshair';
-  } else if(t === 'erase'){
+  if(t === 'erase'){
     canvas.style.cursor = 'cell';
   } else if(t === 'sticker'){
     canvas.style.cursor = 'pointer';
+  } else {
+    canvas.style.cursor = 'crosshair';
   }
 }
 
-// Tool button click
 document.querySelectorAll('[data-t]').forEach(function(b){
   b.addEventListener('click', function(){
     setTool(this.dataset.t);
-    showToast('Mode: ' + (this.dataset.t === 'draw' ? 'Gambar' : this.dataset.t === 'erase' ? 'Hapus' : 'Stiker'));
+    const names = {draw: 'Kuas Normal', neon: 'Kuas Neon ✨', rainbow: 'Kuas Pelangi 🌈', erase: 'Penghapus', sticker: 'Stiker'};
+    showToast('Mode: ' + names[this.dataset.t]);
   });
 });
 
@@ -352,34 +303,20 @@ document.querySelectorAll('[data-t]').forEach(function(b){
 var cr = document.getElementById('colorRow');
 COLORS.forEach(function(c){
   var d = document.createElement('div');
-  d.className = 'cdot';
-  d.dataset.color = c;
+  d.className = 'cdot'; d.dataset.color = c;
   if(c === color) d.classList.add('active');
   d.style.backgroundColor = c;
   
   d.addEventListener('click', function(e){
-    e.stopPropagation();
     color = c;
     document.querySelectorAll('.cdot').forEach(function(x){ x.classList.remove('active'); });
     d.classList.add('active');
-    if(tool === 'draw'){
-      ctx.strokeStyle = c;
-      ctx.globalCompositeOperation = 'source-over';
+    
+    // Auto switch ke tool neon jika sedang pakai rainbow/erase tapi pilih warna
+    if(tool === 'rainbow' || tool === 'erase' || tool === 'sticker') {
+        setTool('draw');
     }
   });
-  
-  d.addEventListener('touchend', function(e){
-    e.stopPropagation();
-    e.preventDefault();
-    color = c;
-    document.querySelectorAll('.cdot').forEach(function(x){ x.classList.remove('active'); });
-    d.classList.add('active');
-    if(tool === 'draw'){
-      ctx.strokeStyle = c;
-      ctx.globalCompositeOperation = 'source-over';
-    }
-  });
-  
   cr.appendChild(d);
 });
 
@@ -389,119 +326,99 @@ var sv = document.getElementById('sizeVal');
 si.addEventListener('input', function(){
   size = parseInt(this.value);
   sv.textContent = size;
-  if(tool === 'draw') ctx.lineWidth = size;
-  if(tool === 'erase') ctx.lineWidth = size * 3;
-});
-si.addEventListener('change', function(){
-  size = parseInt(this.value);
-  sv.textContent = size;
 });
 
 // ── Stickers ──
 var sr = document.getElementById('stickerRow');
 STICKERS.forEach(function(s){
   var b = document.createElement('button');
-  b.className = 'sbtn';
-  b.textContent = s;
-  b.title = s;
-  
-  function pickSticker(e){
-    e.stopPropagation();
-    e.preventDefault();
+  b.className = 'sbtn'; b.textContent = s; b.title = s;
+  b.addEventListener('click', function(e){
     stickerToPlace = s;
     setTool('sticker');
     document.querySelectorAll('.sbtn').forEach(function(x){ x.classList.remove('active'); });
     b.classList.add('active');
-    canvas.style.cursor = 'grab';
     showToast('Tap layar untuk tempel ' + s);
-  }
-  
-  b.addEventListener('click', pickSticker);
-  b.addEventListener('touchend', pickSticker);
+  });
   sr.appendChild(b);
 });
 
 // ── Clear ──
 document.getElementById('btnClear').addEventListener('click', function(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  showToast('Kanvas bersih ✅');
+  showToast('Kanvas bersih ✨');
 });
 
-// ── Save ──
+// ── Smart Save (Merge Video + Canvas) ──
 document.getElementById('btnSave').addEventListener('click', function(){
+  showToast('Menyiapkan foto... ⏳');
+  
+  // Buat canvas sementara untuk menggabungkan kamera & coretan
+  var tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  var tCtx = tempCanvas.getContext('2d');
+  
+  // 1. Gambar Kamera di Latar Belakang (Jika aktif)
+  if(camReady && video.style.display !== 'none') {
+      var vw = video.videoWidth, vh = video.videoHeight;
+      var cw = tempCanvas.width, ch = tempCanvas.height;
+      var vr = vw/vh, cr = cw/ch;
+      var sw, sh, sx, sy;
+      
+      // Simulasi 'object-fit: cover'
+      if(vr > cr){ 
+          sh = vh; sw = vh * cr;
+          sy = 0; sx = (vw - sw) / 2;
+      } else { 
+          sw = vw; sh = vw / cr;
+          sx = 0; sy = (vh - sh) / 2;
+      }
+
+      // Handle mirror video (agar foto sesuai dengan yang dilihat user)
+      tCtx.save();
+      tCtx.translate(tempCanvas.width, 0);
+      tCtx.scale(-1, 1);
+      tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+      tCtx.restore();
+  } else {
+      // Jika kamera tidak aktif, pakai warna background
+      tCtx.fillStyle = '#1a1a2e';
+      tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  }
+
+  // 2. Tumpuk Coretan di Atasnya
+  tCtx.drawImage(canvas, 0, 0);
+
+  // 3. Download Hasil Gabungan
   var a = document.createElement('a');
-  a.download = 'doodle_' + Date.now() + '.png';
-  a.href = canvas.toDataURL('image/png');
+  a.download = 'ardoodle_' + Date.now() + '.png';
+  a.href = tempCanvas.toDataURL('image/png', 0.9);
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  showToast('Foto tersimpan 📸');
+  
+  showToast('Foto berhasil disimpan! 📸');
 });
-
-// ── Record ──
-var recBtn = document.getElementById('btnRec');
-recBtn.addEventListener('click', function(){
-  if(!camReady){ showToast('Kamera belum siap 🚫'); return; }
-  if(recording){ stopRec(); } else { startRec(); }
-});
-
-function startRec(){
-  if(typeof MediaRecorder === 'undefined'){ showToast('Browser tidak mendukung ⚠️'); return; }
-  var stream;
-  try { stream = stage.captureStream ? stage.captureStream(30) : canvas.captureStream(30); }
-  catch(e){ stream = canvas.captureStream(30); }
-  if(!stream){ showToast('Tidak bisa merekam ⚠️'); return; }
-  chunks = [];
-  try { recorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'}); }
-  catch(e){ try { recorder = new MediaRecorder(stream, {mimeType:'video/webm'}); } catch(e2){ recorder = new MediaRecorder(stream); } }
-  recorder.ondataavailable = function(e){ if(e.data.size>0) chunks.push(e.data); };
-  recorder.onstop = function(){
-    var blob = new Blob(chunks, {type:'video/webm'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.download = 'doodle_' + Date.now() + '.webm';
-    a.href = url;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Video tersimpan 🎬');
-  };
-  recorder.start();
-  recording = true;
-  recBtn.classList.add('rec');
-  recBtn.innerHTML = '⏹️ Stop';
-}
-
-function stopRec(){
-  if(recorder && recorder.state !== 'inactive') recorder.stop();
-  recording = false;
-  recBtn.classList.remove('rec');
-  recBtn.innerHTML = '⏺️';
-}
 
 // ── Camera ──
 document.getElementById('startBtn').addEventListener('click', function(){
-  fit();
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    fallbackBg();
-    return;
+    fallbackBg(); return;
   }
+  // Minta izin kamera
   navigator.mediaDevices.getUserMedia({
-    video: {facingMode:'environment', width:{ideal:640}, height:{ideal:480}},
+    video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}},
     audio: false
   }).then(function(stream){
     video.srcObject = stream;
     video.onloadedmetadata = function(){
       video.play();
       camReady = true;
-      setTimeout(fit, 200);
-      setTimeout(fit, 800);
+      fit();
     };
     overlay.style.display = 'none';
-    showToast('📱 Sentuh & geser di layar untuk menggambar');
-    setTimeout(fit, 100);
-    setTimeout(fit, 500);
+    showToast('Kamera aktif! Sentuh layar untuk menggambar ✨');
   }).catch(function(err){
     console.error('Camera error:', err);
     fallbackBg();
@@ -511,11 +428,10 @@ document.getElementById('startBtn').addEventListener('click', function(){
 function fallbackBg(){
   video.style.display = 'none';
   overlay.style.display = 'none';
-  camReady = true;
-  stage.style.background = '#2d3a4a url(https://picsum.photos/seed/doodle/800/450) center/cover no-repeat';
+  camReady = false;
+  stage.style.background = '#2d3a4a url(https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000) center/cover no-repeat';
   fit();
-  setTimeout(fit, 200);
-  showToast('📱 Mode latar — sentuh & geser untuk menggambar');
+  showToast('Kamera diblokir. Menggunakan Mode Latar Belakang.');
 }
 
 // ── Toast ──
@@ -526,17 +442,6 @@ function showToast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2500);
 }
-
-// ── Init ──
-setTool('draw');
-fit();
-
-// Force refit after everything loads
-window.addEventListener('load', function(){
-  setTimeout(fit, 100);
-  setTimeout(fit, 500);
-  setTimeout(fit, 1500);
-});
 
 })();
 </script>
