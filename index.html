@@ -10,9 +10,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a}
 body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}
 
 #stage{position:relative;flex:1;overflow:hidden;background:#1a1a2e}
-#stage canvas{position:absolute;top:0;left:0;z-index:3;touch-action:none}
-#stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1; transform: scaleX(-1);} /* Kamera di-mirror agar tidak pusing */
-#stage .bg-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
+#stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1; transform: scaleX(-1); transition: filter 0.3s;}
+
+/* Pembungkus Canvas untuk Efek Hologram 3D (Gyroscope) */
+#canvasWrap{position:absolute;top:-50px;left:-50px;right:-50px;bottom:-50px;z-index:3; pointer-events:auto;}
+#canvasWrap canvas{position:absolute;top:50px;left:50px;touch-action:none}
+#drawCanvas{z-index:1}
+#animCanvas{z-index:2; pointer-events:none;} /* Layer khusus animasi partikel & stiker */
 
 #startOverlay{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.95); backdrop-filter:blur(10px)}
 .overlay-box{background:#1e293b;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:40px 28px;max-width:360px;text-align:center;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
@@ -28,14 +32,21 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 .tb:active{transform:scale(.95)}
 .tb.active{border-color:#38bdf8;background:rgba(56,189,248,.15);color:#38bdf8}
 
-/* Warna Khusus Kuas */
+/* Warna Khusus Kuas Pamungkas */
 .tb.draw.active{color:#fff;background:rgba(56,189,248,.3);border-color:#38bdf8;}
 .tb.neon{color:#fde047;}
 .tb.neon.active{color:#fff;background:rgba(253,224,71,.3);border-color:#fde047;box-shadow:0 0 15px rgba(253,224,71,.4);}
 .tb.rainbow{background:linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; border:1px solid rgba(255,255,255,.2)}
 .tb.rainbow.active{background:linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); color:#fff; -webkit-background-clip:initial; -webkit-text-fill-color:initial; border-color:#fff;}
+.tb.mandala{color:#a855f7;}
+.tb.mandala.active{color:#fff;background:rgba(168,85,247,.3);border-color:#a855f7;}
+.tb.cosmic{color:#fb7185;}
+.tb.cosmic.active{color:#fff;background:rgba(251,113,133,.3);border-color:#fb7185;box-shadow:0 0 15px rgba(251,113,133,.5); animation:pulse 1.5s infinite;}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 10px rgba(251,113,133,.4)}50%{box-shadow:0 0 25px rgba(251,113,133,.8)}}
+
 .tb.erase{color:#ef4444}
-.tb.sticker{color:#a78bfa}
+.tb.sticker{color:#f472b6}
 .tb svg{width:20px;height:20px;flex-shrink:0;pointer-events:none}
 
 .color-row{display:flex;gap:6px;align-items:center}
@@ -47,7 +58,7 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 .sticker-row{display:flex;gap:4px;align-items:center}
 .sbtn{font-size:26px;padding:6px 8px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;line-height:1}
 .sbtn:active{transform:scale(.9)}
-.sbtn.active{border-color:#a78bfa;background:rgba(167,139,250,.2)}
+.sbtn.active{border-color:#f472b6;background:rgba(244,114,182,.2)}
 
 .sz{display:flex;align-items:center;gap:8px}
 .sz input{width:80px;height:28px;accent-color:#38bdf8}
@@ -59,65 +70,54 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 #toast{position:fixed;top:24px;left:50%;transform:translate(-50%, -20px);background:rgba(16,185,129,.95);color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;z-index:9999;opacity:0;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);pointer-events:none; box-shadow:0 10px 25px rgba(0,0,0,.3)}
 #toast.show{opacity:1; transform:translate(-50%, 0);}
 
-#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;color:rgba(255,255,255,.6);font-size:16px;font-weight:bold;text-align:center;pointer-events:none;transition:opacity .5s;text-shadow:0 2px 10px rgba(0,0,0,.8); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:30px; backdrop-filter:blur(5px);}
-
-#debugDot{position:fixed;width:12px;height:12px;border-radius:50%;background:#38bdf8;z-index:99999;pointer-events:none;opacity:0;transform:translate(-50%,-50%);box-shadow:0 0 15px #38bdf8}
+#guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;color:rgba(255,255,255,.6);font-size:16px;font-weight:bold;text-align:center;pointer-events:none;transition:opacity .5s;text-shadow:0 2px 10px rgba(0,0,0,.8); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:30px; backdrop-filter:blur(5px);}
 </style>
 </head>
 <body>
 
 <div id="startOverlay">
   <div class="overlay-box">
-    <div style="font-size: 50px; margin-bottom: 10px;">🦄</div>
-    <h2>AR Doodle Fun</h2>
-    <p>Ubah duniamu jadi kanvas! Gambar <b>Neon</b> atau <b>Pelangi</b> langsung di atas layar kameramu.</p>
-    <button id="startBtn">📷 Nyalakan Kamera</button>
+    <div style="font-size: 50px; margin-bottom: 10px;">🔮</div>
+    <h2>AR Doodle Fun Dewa</h2>
+    <p>Sekarang dilengkapi <b>Physics Engine</b> & <b>Sensor Hologram 3D</b>. <br>Izinkan Akses Sensor Gerak (Gyroscope) jika diminta.</p>
+    <button id="startBtn">📷 Mulai Keajaiban</button>
   </div>
 </div>
 
 <div id="stage">
   <video id="camVideo" playsinline autoplay muted></video>
-  <canvas id="drawCanvas"></canvas>
+  <div id="canvasWrap">
+      <canvas id="drawCanvas"></canvas> <!-- Layer coretan statis -->
+      <canvas id="animCanvas"></canvas> <!-- Layer partikel & stiker hidup -->
+  </div>
   <div id="guide">👆 Sentuh layar lalu geser</div>
 </div>
 
-<div id="debugDot"></div>
-
 <div id="toolbar">
-  <!-- Kuas Normal -->
-  <button class="tb draw active" data-t="draw">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-    Normal
-  </button>
-  <!-- Kuas Neon Baru -->
+  <button class="tb" id="btnFilter" style="color:#34d399">🌗 Filter</button>
+  <button class="tb" id="btnUndo" style="color:#cbd5e1" title="Batal (Undo)">↩️ Undo</button>
+  <span class="sep">|</span>
+
+  <button class="tb draw active" data-t="draw">Normal</button>
   <button class="tb neon" data-t="neon">✨ Neon</button>
-  <!-- Kuas Pelangi Baru -->
   <button class="tb rainbow" data-t="rainbow">🌈 Pelangi</button>
+  <button class="tb mandala" data-t="mandala">❄️ Mandala</button>
+  
+  <!-- KUAS PAMUNGKAS -->
+  <button class="tb cosmic" data-t="cosmic">☄️ Kuas Kosmik</button>
 
   <span class="sep">|</span>
-  
-  <button class="tb erase" data-t="erase">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-9H9m2-4h4"/></svg>
-    Hapus
-  </button>
-  
+  <button class="tb erase" data-t="erase">Hapus</button>
   <span class="sep">|</span>
-  
   <div class="color-row" id="colorRow"></div>
-  
   <span class="sep">|</span>
-  
   <div class="sz"><span>Ukuran</span><input type="range" id="sizeIn" min="2" max="30" value="8"><span id="sizeVal">8</span></div>
-  
   <span class="sep">|</span>
-  
-  <button class="tb sticker" data-t="sticker">Stiker</button>
+  <button class="tb sticker" data-t="sticker">Stiker Hidup 🛸</button>
   <div class="sticker-row" id="stickerRow"></div>
-  
   <div class="s1"></div>
-  
-  <button class="tb" id="btnClear" style="color:#f59e0b" title="Bersihkan">🗑️</button>
-  <button class="tb" id="btnSave" style="color:#10b981; font-size:16px;" title="Simpan Foto">📸 Simpan</button>
+  <button class="tb" id="btnClear" style="color:#f59e0b">🗑️</button>
+  <button class="tb" id="btnSave" style="color:#10b981; font-size:16px;">📸 Simpan</button>
 </div>
 
 <div id="toast"></div>
@@ -125,21 +125,33 @@ body{font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:
 <script>
 (function(){
 var stage = document.getElementById('stage');
+var canvasWrap = document.getElementById('canvasWrap');
 var canvas = document.getElementById('drawCanvas');
 var ctx = canvas.getContext('2d');
+var animCanvas = document.getElementById('animCanvas');
+var aCtx = animCanvas.getContext('2d');
 var video = document.getElementById('camVideo');
 var guide = document.getElementById('guide');
 var toast = document.getElementById('toast');
 var overlay = document.getElementById('startOverlay');
-var debugDot = document.getElementById('debugDot');
 
-var COLORS = ['#FFFFFF','#FF0000','#FF6600','#FFCC00','#00FF00','#00CCFF','#0066FF','#9933FF','#FF00FF','#FF69B4','#00FFFF','#808080','#000000'];
-var STICKERS = ['⭐','🔥','💡','🦋','✨','🎈','🍕','👻','🤖','👑','💯','🎉'];
+var COLORS = ['#FFFFFF','#FF0000','#FF6600','#FFCC00','#00FF00','#00CCFF','#0066FF','#9933FF','#FF00FF','#FF69B4','#00FFFF','#000000'];
+var STICKERS = ['🦋','🔥','✨','🍕','👻','👽','👾','🦄','🏀','🎈','⚡','💎'];
 
 var color = '#FFFFFF', size = 8, tool = 'draw', stickerToPlace = null;
 var drawing = false, lastX = 0, lastY = 0;
 var camReady = false;
-var hue = 0; // Untuk Kuas Pelangi
+var hue = 0; 
+
+// State Management
+var undoStack = [];
+var filters = ['none', 'grayscale(100%)', 'sepia(80%)', 'invert(100%)', 'hue-rotate(180deg)'];
+var filterNames = ['Normal', 'Hitam Putih', 'Klasik / Sepia', 'Negatif', 'Dunia Alien'];
+var currentFilterIdx = 0;
+
+// Mesin Fisika (Particle & Physics Engine Level Dewa)
+var particles = []; 
+var liveStickers = [];
 
 // ── Canvas sizing ──
 function fit(){
@@ -149,67 +161,140 @@ function fit(){
   if(h < 1) h = window.innerHeight;
   
   if(canvas.width !== w || canvas.height !== h){
-    // Simpan gambar sebelum di-resize agar tidak hilang
     var imgData = null;
-    if(canvas.width > 0 && canvas.height > 0) {
-        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    }
+    if(canvas.width > 0 && canvas.height > 0) imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    canvas.width = w;
-    canvas.height = h;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
+    // Resize both canvases
+    canvas.width = w; canvas.height = h;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     
-    // Kembalikan gambar
+    animCanvas.width = w; animCanvas.height = h;
+    animCanvas.style.width = w + 'px'; animCanvas.style.height = h + 'px';
+    
     if(imgData) ctx.putImageData(imgData, 0, 0);
 
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   }
 }
-
-// Fit trigger
 fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
 
-// ── Get touch position ──
+// ── Animasi Mesin Fisika (Particle Engine Loop) ──
+function animate() {
+    aCtx.clearRect(0, 0, animCanvas.width, animCanvas.height);
+
+    // 1. Gambar & Update Stiker Hidup (Bouncing Logic)
+    aCtx.textAlign = 'center'; 
+    aCtx.textBaseline = 'middle';
+    
+    liveStickers.forEach(s => {
+        // Gerakkan stiker
+        s.x += s.vx; s.y += s.vy;
+        
+        // Memantul jika menabrak dinding layar
+        if(s.x < 0 || s.x > animCanvas.width) s.vx *= -1;
+        if(s.y < 0 || s.y > animCanvas.height) s.vy *= -1;
+        
+        // Efek rotasi
+        s.angle += s.rotSpeed;
+
+        aCtx.save();
+        aCtx.translate(s.x, s.y);
+        aCtx.rotate(s.angle);
+        aCtx.font = s.size + 'px Arial';
+        aCtx.shadowBlur = 10;
+        aCtx.shadowColor = 'rgba(255,255,255,0.5)';
+        aCtx.fillText(s.emoji, 0, 0);
+        aCtx.restore();
+    });
+
+    // 2. Gambar & Update Partikel Kosmik (Gravity Logic)
+    for(var i = particles.length - 1; i >= 0; i--) {
+        var p = particles[i];
+        p.x += p.vx; 
+        p.y += p.vy;
+        p.vy += 0.2; // Gaya gravitasi ke bawah
+        p.life -= 0.015; // Partikel memudar
+
+        if(p.life <= 0) {
+            particles.splice(i, 1); // Hapus partikel mati
+            continue;
+        }
+
+        aCtx.globalAlpha = p.life;
+        aCtx.fillStyle = p.color;
+        aCtx.shadowBlur = 15;
+        aCtx.shadowColor = p.color;
+        
+        aCtx.beginPath();
+        aCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        aCtx.fill();
+    }
+
+    aCtx.globalAlpha = 1;
+    aCtx.shadowBlur = 0;
+    
+    requestAnimationFrame(animate);
+}
+animate(); // Jalankan Loop Dewa
+
+// ── Get touch position (Mendukung Transformasi Wrapper) ──
 function getPos(e){
   var r = canvas.getBoundingClientRect();
   var cx, cy;
   if(e.touches && e.touches.length > 0){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
   else if(e.clientX !== undefined && e.clientY !== undefined){ cx = e.clientX; cy = e.clientY; }
   else if(e.changedTouches && e.changedTouches.length > 0){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
-  else { return null; }
-  
-  var x = cx - r.left; var y = cy - r.top;
-  
-  debugDot.style.left = cx + 'px'; debugDot.style.top = cy + 'px';
-  debugDot.style.opacity = '1'; setTimeout(function(){ debugDot.style.opacity = '0'; }, 200);
-  return {x:x, y:y};
+  else return null;
+  return {x: cx - r.left, y: cy - r.top}; // Akurat meski canvasWrap ditranslate
 }
+
+// ── Sistem Undo Level Dewa (Simpan Coretan + Objek Hidup) ──
+function saveState() {
+    undoStack.push({
+        imgData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+        stickers: JSON.parse(JSON.stringify(liveStickers)) // Clone data stiker
+    });
+    if(undoStack.length > 20) undoStack.shift(); 
+}
+
+document.getElementById('btnUndo').addEventListener('click', function() {
+    if(undoStack.length > 0) {
+        var lastState = undoStack.pop();
+        ctx.putImageData(lastState.imgData, 0, 0);
+        liveStickers = lastState.stickers; // Kembalikan posisi/jumlah stiker
+        showToast('Undo berhasil ↩️');
+    } else {
+        showToast('Tidak ada yang bisa dibatalkan');
+    }
+});
 
 // ── Drawing ──
 function startDraw(e){
   guide.style.opacity = '0';
+  var p = getPos(e); if(!p) return;
+
+  saveState(); 
   
   if(tool === 'sticker'){
     if(stickerToPlace){
-      var p = getPos(e); if(!p) return;
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.shadowBlur = 0; // Matikan neon jika sedang tempel stiker
-      ctx.font = (size * 10) + 'px Arial';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(stickerToPlace, p.x, p.y);
+      // Tambahkan Stiker Hidup! (Bouncing Live Sticker)
+      liveStickers.push({
+          x: p.x, y: p.y,
+          vx: (Math.random() - 0.5) * 6, // Kecepatan X acak
+          vy: (Math.random() - 0.5) * 6, // Kecepatan Y acak
+          rotSpeed: (Math.random() - 0.5) * 0.2, // Kecepatan rotasi
+          angle: 0,
+          emoji: stickerToPlace,
+          size: size * 10
+      });
       stickerToPlace = null;
       setTool('draw');
-      showToast('Stiker ditempel! ✅');
+      showToast('Stiker melayang! 🛸');
     }
     return;
   }
   
-  var p = getPos(e); if(!p) return;
   drawing = true; lastX = p.x; lastY = p.y;
-  
-  // Set Tool Properties
   ctx.lineWidth = tool === 'erase' ? size * 3 : size;
   
   if(tool === 'erase'){
@@ -217,24 +302,20 @@ function startDraw(e){
     ctx.shadowBlur = 0;
   } else {
     ctx.globalCompositeOperation = 'source-over';
-    
-    // Logika Kuas Neon & Pelangi
-    if(tool === 'rainbow') {
+    if(tool === 'rainbow' || tool === 'cosmic') {
         ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
         ctx.shadowBlur = 0;
-    } else if (tool === 'neon') {
-        ctx.strokeStyle = '#ffffff'; // Inti garis warna putih
-        ctx.shadowBlur = size * 2;   // Glow
-        ctx.shadowColor = color;     // Warna cahaya
+    } else if (tool === 'neon' || tool === 'mandala') {
+        ctx.strokeStyle = '#ffffff'; 
+        ctx.shadowBlur = size * 2;   
+        ctx.shadowColor = color;     
     } else {
         ctx.strokeStyle = color;
         ctx.shadowBlur = 0;
     }
   }
   
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y);
-  
+  if(tool !== 'mandala') { ctx.beginPath(); ctx.moveTo(p.x, p.y); }
   try { e.preventDefault(); } catch(ex) {}
 }
 
@@ -242,18 +323,44 @@ function doDraw(e){
   if(!drawing) return;
   var p = getPos(e); if(!p) return;
   
-  if(tool === 'rainbow') {
+  if(tool === 'cosmic') {
+      hue += 5; if(hue > 360) hue = 0;
+      var c = `hsl(${hue}, 100%, 50%)`;
+      ctx.strokeStyle = c;
+      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+      
+      // Muncratkan Partikel Kosmik ke Mesin Fisika (animCanvas)
+      for(var i=0; i<3; i++){
+          particles.push({
+              x: p.x, y: p.y,
+              vx: (Math.random() - 0.5) * 8, // Ledakan menyebar
+              vy: (Math.random() - 0.5) * 8,
+              life: 1.0,
+              color: c,
+              size: Math.random() * size + 2
+          });
+      }
+  } else if (tool === 'mandala') {
+      var cx = canvas.width / 2; var cy = canvas.height / 2; var slices = 6; 
+      ctx.strokeStyle = '#ffffff'; ctx.shadowBlur = size * 2; ctx.shadowColor = color;
+
+      for (var i = 0; i < slices; i++) {
+          var angle = (Math.PI * 2 / slices) * i;
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle);
+          var lx = lastX - cx; var ly = lastY - cy;
+          var px = p.x - cx; var py = p.y - cy;
+
+          ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(px, py); ctx.stroke();
+          ctx.scale(1, -1);
+          ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(px, py); ctx.stroke();
+          ctx.restore();
+      }
+  } else if (tool === 'rainbow') {
       hue += 5; if(hue > 360) hue = 0;
       ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
-      
-      // Untuk rainbow, kita harus mulai path baru tiap detik agar warnanya berubah dinamis
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
   } else {
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
+      ctx.lineTo(p.x, p.y); ctx.stroke();
   }
   
   lastX = p.x; lastY = p.y;
@@ -261,17 +368,13 @@ function doDraw(e){
 }
 
 function stopDraw(e){
-  if(!drawing) return;
-  drawing = false;
-  ctx.closePath();
+  if(!drawing) return; drawing = false; ctx.closePath();
 }
 
-// Event Bindings
 canvas.addEventListener('pointerdown', function(e){ if(e.isPrimary || e.pointerType === 'touch') startDraw(e); });
 canvas.addEventListener('pointermove', function(e){ if(drawing) doDraw(e); });
 canvas.addEventListener('pointerup', stopDraw);
 canvas.addEventListener('pointerleave', stopDraw);
-canvas.addEventListener('pointercancel', stopDraw);
 canvas.addEventListener('touchstart', function(e){ startDraw(e); }, {passive: false});
 canvas.addEventListener('touchmove', function(e){ if(drawing) doDraw(e); }, {passive: false});
 canvas.addEventListener('touchend', stopDraw);
@@ -281,166 +384,140 @@ function setTool(t){
   tool = t;
   document.querySelectorAll('.tb.active').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('[data-t]').forEach(function(b){ if(b.dataset.t === t) b.classList.add('active'); });
-  
-  if(t === 'erase'){
-    canvas.style.cursor = 'cell';
-  } else if(t === 'sticker'){
-    canvas.style.cursor = 'pointer';
-  } else {
-    canvas.style.cursor = 'crosshair';
-  }
+  if(t === 'erase') canvas.style.cursor = 'cell'; else if(t === 'sticker') canvas.style.cursor = 'pointer'; else canvas.style.cursor = 'crosshair';
 }
 
 document.querySelectorAll('[data-t]').forEach(function(b){
   b.addEventListener('click', function(){
     setTool(this.dataset.t);
-    const names = {draw: 'Kuas Normal', neon: 'Kuas Neon ✨', rainbow: 'Kuas Pelangi 🌈', erase: 'Penghapus', sticker: 'Stiker'};
+    const names = {draw: 'Kuas Normal', neon: 'Kuas Neon ✨', rainbow: 'Kuas Pelangi 🌈', mandala: 'Kuas Mandala ❄️', cosmic: 'Kuas Kosmik ☄️', erase: 'Penghapus', sticker: 'Stiker Hidup 🛸'};
     showToast('Mode: ' + names[this.dataset.t]);
   });
 });
 
-// ── Colors ──
+document.getElementById('btnFilter').addEventListener('click', function() {
+    currentFilterIdx = (currentFilterIdx + 1) % filters.length;
+    video.style.filter = filters[currentFilterIdx];
+    showToast('Filter: ' + filterNames[currentFilterIdx]);
+});
+
+// ── Colors, Sizes & Stickers ──
 var cr = document.getElementById('colorRow');
 COLORS.forEach(function(c){
-  var d = document.createElement('div');
-  d.className = 'cdot'; d.dataset.color = c;
-  if(c === color) d.classList.add('active');
-  d.style.backgroundColor = c;
-  
+  var d = document.createElement('div'); d.className = 'cdot'; d.dataset.color = c;
+  if(c === color) d.classList.add('active'); d.style.backgroundColor = c;
   d.addEventListener('click', function(e){
     color = c;
     document.querySelectorAll('.cdot').forEach(function(x){ x.classList.remove('active'); });
     d.classList.add('active');
-    
-    // Auto switch ke tool neon jika sedang pakai rainbow/erase tapi pilih warna
-    if(tool === 'rainbow' || tool === 'erase' || tool === 'sticker') {
-        setTool('draw');
-    }
+    if(tool === 'rainbow' || tool === 'cosmic' || tool === 'erase' || tool === 'sticker') setTool('draw');
   });
   cr.appendChild(d);
 });
 
-// ── Size ──
-var si = document.getElementById('sizeIn');
-var sv = document.getElementById('sizeVal');
-si.addEventListener('input', function(){
-  size = parseInt(this.value);
-  sv.textContent = size;
-});
+var si = document.getElementById('sizeIn'); var sv = document.getElementById('sizeVal');
+si.addEventListener('input', function(){ size = parseInt(this.value); sv.textContent = size; });
 
-// ── Stickers ──
 var sr = document.getElementById('stickerRow');
 STICKERS.forEach(function(s){
-  var b = document.createElement('button');
-  b.className = 'sbtn'; b.textContent = s; b.title = s;
+  var b = document.createElement('button'); b.className = 'sbtn'; b.textContent = s; b.title = s;
   b.addEventListener('click', function(e){
-    stickerToPlace = s;
-    setTool('sticker');
+    stickerToPlace = s; setTool('sticker');
     document.querySelectorAll('.sbtn').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active');
-    showToast('Tap layar untuk tempel ' + s);
+    b.classList.add('active'); showToast('Tap layar untuk terbangkan ' + s);
   });
   sr.appendChild(b);
 });
 
 // ── Clear ──
 document.getElementById('btnClear').addEventListener('click', function(){
+  saveState();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = []; liveStickers = [];
   showToast('Kanvas bersih ✨');
 });
 
-// ── Smart Save (Merge Video + Canvas) ──
+// ── Smart Save (Merge Camera + Static Canvas + Live Anim Canvas) ──
 document.getElementById('btnSave').addEventListener('click', function(){
   showToast('Menyiapkan foto... ⏳');
-  
-  // Buat canvas sementara untuk menggabungkan kamera & coretan
   var tempCanvas = document.createElement('canvas');
-  tempCanvas.width = canvas.width;
-  tempCanvas.height = canvas.height;
+  tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
   var tCtx = tempCanvas.getContext('2d');
   
-  // 1. Gambar Kamera di Latar Belakang (Jika aktif)
+  // 1. Gambar Kamera + Filter
   if(camReady && video.style.display !== 'none') {
-      var vw = video.videoWidth, vh = video.videoHeight;
-      var cw = tempCanvas.width, ch = tempCanvas.height;
-      var vr = vw/vh, cr = cw/ch;
-      var sw, sh, sx, sy;
-      
-      // Simulasi 'object-fit: cover'
-      if(vr > cr){ 
-          sh = vh; sw = vh * cr;
-          sy = 0; sx = (vw - sw) / 2;
-      } else { 
-          sw = vw; sh = vw / cr;
-          sx = 0; sy = (vh - sh) / 2;
-      }
-
-      // Handle mirror video (agar foto sesuai dengan yang dilihat user)
-      tCtx.save();
-      tCtx.translate(tempCanvas.width, 0);
-      tCtx.scale(-1, 1);
-      tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
-      tCtx.restore();
+      var vw = video.videoWidth, vh = video.videoHeight; var cw = tempCanvas.width, ch = tempCanvas.height;
+      var vr = vw/vh, cr = cw/ch; var sw, sh, sx, sy;
+      if(vr > cr){ sh = vh; sw = vh * cr; sy = 0; sx = (vw - sw) / 2; } else { sw = vw; sh = vw / cr; sx = 0; sy = (vh - sh) / 2; }
+      tCtx.save(); tCtx.filter = filters[currentFilterIdx]; tCtx.translate(tempCanvas.width, 0); tCtx.scale(-1, 1);
+      tCtx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch); tCtx.restore();
   } else {
-      // Jika kamera tidak aktif, pakai warna background
-      tCtx.fillStyle = '#1a1a2e';
-      tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      tCtx.fillStyle = '#1a1a2e'; tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
   }
 
-  // 2. Tumpuk Coretan di Atasnya
+  // 2. Gabungkan Coretan Statis & Objek Hidup
   tCtx.drawImage(canvas, 0, 0);
+  tCtx.drawImage(animCanvas, 0, 0);
 
-  // 3. Download Hasil Gabungan
-  var a = document.createElement('a');
-  a.download = 'ardoodle_' + Date.now() + '.png';
-  a.href = tempCanvas.toDataURL('image/png', 0.9);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  
-  showToast('Foto berhasil disimpan! 📸');
+  var a = document.createElement('a'); a.download = 'ardoodle_dewa_' + Date.now() + '.png';
+  a.href = tempCanvas.toDataURL('image/png', 1.0);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('Foto ajaib berhasil disimpan! 📸');
 });
 
-// ── Camera ──
+// ── EFEK HOLOGRAM 3D (Gyroscope Parallax) ──
+function initGyroscope() {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // iOS 13+ requires user interaction permission
+        DeviceOrientationEvent.requestPermission().then(permissionState => {
+            if (permissionState === 'granted') window.addEventListener('deviceorientation', handleOrientation);
+        }).catch(console.error);
+    } else {
+        // Android / Non-iOS 13
+        window.addEventListener('deviceorientation', handleOrientation);
+    }
+}
+
+function handleOrientation(e) {
+    // Parallax logic: geser canvas wrapper berlawanan arah miring
+    var x = e.gamma ? e.gamma : 0; // Kiri Kanan
+    var y = e.beta ? e.beta : 0; // Depan Belakang
+    
+    // Batasi pergeseran agar tidak keluar layar jauh
+    x = Math.max(-45, Math.min(45, x));
+    y = Math.max(-45, Math.min(45, y));
+    
+    // Terapkan translasi ke wrapper (seolah-olah mengambang 3D)
+    canvasWrap.style.transform = `translate(${-x}px, ${-y}px)`;
+}
+
+// ── Camera Init ──
 document.getElementById('startBtn').addEventListener('click', function(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    fallbackBg(); return;
-  }
-  // Minta izin kamera
+  initGyroscope(); // Minta izin sensor hologram
+  
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ fallbackBg(); return; }
   navigator.mediaDevices.getUserMedia({
-    video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}},
-    audio: false
+    video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}, audio: false
   }).then(function(stream){
     video.srcObject = stream;
-    video.onloadedmetadata = function(){
-      video.play();
-      camReady = true;
-      fit();
-    };
+    video.onloadedmetadata = function(){ video.play(); camReady = true; fit(); };
     overlay.style.display = 'none';
-    showToast('Kamera aktif! Sentuh layar untuk menggambar ✨');
-  }).catch(function(err){
-    console.error('Camera error:', err);
-    fallbackBg();
-  });
+    showToast('Mode Hologram Aktif! Coba miringkan HP 🌌');
+  }).catch(function(err){ console.error('Camera error:', err); fallbackBg(); });
 });
 
 function fallbackBg(){
-  video.style.display = 'none';
-  overlay.style.display = 'none';
-  camReady = false;
+  video.style.display = 'none'; overlay.style.display = 'none'; camReady = false;
   stage.style.background = '#2d3a4a url(https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000) center/cover no-repeat';
-  fit();
-  showToast('Kamera diblokir. Menggunakan Mode Latar Belakang.');
+  fit(); showToast('Kamera diblokir. Menggunakan Latar Belakang.');
 }
 
-// ── Toast ──
+// ── Toast System ──
 var toastTimer;
 function showToast(msg){
-  toast.textContent = msg;
-  toast.classList.add('show');
+  toast.textContent = msg; toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2500);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 3000);
 }
 
 })();
